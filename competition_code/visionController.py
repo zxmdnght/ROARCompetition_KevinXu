@@ -25,9 +25,9 @@ class VisionController:
         
         self.frame_count += 1
         
-        #Every third frame
-        if self.frame_count % 2 != 0:
-            return self.last_mu_adjustment
+        #Every second frame
+        #if self.frame_count % 2 != 0:
+        #    return self.last_mu_adjustment
         
         #Track curvature and width analysis
         numpy_camera_img = np.array(camera_image)
@@ -36,16 +36,15 @@ class VisionController:
         mu_adjustment = curvature
     
         #Limiting extreme adjustments
-        mu_adjustment = np.clip(mu_adjustment, 0.95, 2.0) #0.7 to 1.3 Original
+        mu_adjustment = np.clip(mu_adjustment, 0.5, 2.0) #0.7 to 1.3 Original
         
-        smoothing = 0.3 #0.7 Original, reduces jitter and adjustments
+        smoothing = 0.7 #0.7 Original, reduces jitter and adjustments
         mu_adjustment = smoothing * self.last_mu_adjustment + (1 - smoothing) * mu_adjustment
         self.last_mu_adjustment = mu_adjustment
 
         if self.debug_graphs:
             print(f"Vision Controller - Curvature: {curvature:.2f}, Mu Adjustment: {mu_adjustment:.2f}")
             #Track Width: {track_width:.2f}
-
         return mu_adjustment
 
     def analyze_curvature(self, image):
@@ -66,11 +65,11 @@ class VisionController:
         #Gaussian Blur to reduce noise
         blurred_camera_img = cv2.GaussianBlur(grey_camera_img, (9, 9), 0)
         #Edge detection through Canny
-        edges = cv2.Canny(blurred_camera_img, 150, 200)
+        edges = cv2.Canny(blurred_camera_img, 50, 150)
 
         #Focusing on the visible portion of the track
         height, width = edges.shape
-        top = int(height*0.30)
+        top = int(height*0.3)
         bottom = int(height*0.55)
         region_of_interest = edges[top:bottom, :]
 
@@ -102,35 +101,38 @@ class VisionController:
             return 1.05 #cant detect, assume all is normal
         
         avg_slope = np.mean(slopes)
-        if avg_slope < 1.15:
+        if avg_slope < 1.05:
+            print("Extremely Straight Road Detected")
+            return 2.0 #extremely straight road
+        elif avg_slope < 1.10:
             print("Very Straight Road Detected")
-            return 2.0 #very straight road
-        elif avg_slope < 1.18:
+            return 1.075 #very straight road
+        elif avg_slope < 1.11:
             print("Straight Road Detected")
-            return 1.9 #straight road
-        elif avg_slope < 1.2:
+            return 1.05 #straight road
+        elif avg_slope < 1.12:
             print("Moderate Curves Detected")
-            return 1.75 #moderate curves
-        elif avg_slope < 1.225:
+            return 1.00 #moderate curves
+        elif avg_slope < 1.13:
             print("Mild Curves Detected")
-            return 1.6 #mild curves
-        elif avg_slope < 1.25:
+            return 0.925 #mild curves
+        elif avg_slope < 1.14:
             print("Somewhat Tight Curves Detected")
-            return 1.4 #somewhat tight curves
-        elif avg_slope < 1.3:
+            return 0.85 #somewhat tight curves
+        elif avg_slope < 1.15:
             print("Tight Curves Detected")
-            return 1.3 #tight curves
-        elif avg_slope < 1.35:
+            return 0.825 #tight curves
+        elif avg_slope < 1.16:
             print("Very Tight Curves Detected")
-            return 1.2 #very tight curves
-        elif avg_slope < 1.38:
+            return 0.8 #very tight curves
+        elif avg_slope < 1.18:
             print("Very Very Tight Curves Detected")
-            return 1.1 #very tight curves
-        elif avg_slope < 1.4:
+            return 0.75 #very very tight curves
+        elif avg_slope < 1.22:
             print("Extremely Tight Curves Detected")
-            return 0.95 #very tight curves
+            return 0.7 #extremely tight curves
         else:
-            return 0.90 #very tight curves
+            return 0.5 
 
     def visualize(self, image, mu_adjustment):
         """
@@ -149,7 +151,7 @@ class VisionController:
         if mu_adjustment >= 1.0:
             color = (0, 255, 0) #Green for open space : Faster
         else:
-            color = (0, 165, 255) #Red for tight space : Slower
+            color = (255, 0, 0) #Red for tight space : Slower
         
         cv2.putText(modified_img, f"Mu Adj: {mu_adjustment:.2f}", (10, height - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2)
         top = int(height * 0.25)
