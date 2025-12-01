@@ -11,11 +11,11 @@ class VisionController:
         self.last_mu_adjustment = 1.0
         self.frame_count = 0
     
-    def get_mu_adjustment(self, camera_image, current_speed_kmh):
+    def get_mu_adjustment(self, camera_image):
         """
-        Analyze the camera image and return a mu adjustment factor for steering.
-        Args: camera_image (np.ndarray): The input camera image from the vehicle AND current_speed_kmh (float): The current speed of the vehicle in km/h.
-        Returns: float The mu adjustment factor for steering.
+        Analyze the camera image and return a mu adjustment factor for speed.
+        Args: camera_image (np.ndarray): The input camera image from the vehicle
+        Returns: float The mu adjustment factor for speed.
             1.0 = no changes made
             > 1.0 = speed can be increased (large open space, small curves, wide area)
             < 1.0 = speed should be decreased (tight curves, narrow area)
@@ -31,18 +31,8 @@ class VisionController:
         
         #Track curvature and width analysis
         numpy_camera_img = np.array(camera_image)
-        curvature = self._analyze_curvature(numpy_camera_img)
-        #track_width = self._analyze_road_width(numpy_camera_img)
+        curvature = self.analyze_curvature(numpy_camera_img)
 
-        #Track width and curvature 
-        # if curvature > 1.0 and track_width > 1.0:
-        #     mu_adjustment = (curvature + track_width) / 2.0 #Open Space
-        # elif curvature < 1.0 or track_width < 1.0:
-        #     mu_adjustment = min(curvature, track_width) #Tight Space
-        # else:
-        #     mu_adjustment = 0.7 * 1.0 + 0.15 * curvature + 0.15 * track_width #Contradictory, Normal Space
-        
-        #Curvature Only
         mu_adjustment = curvature
     
         #Limiting extreme adjustments
@@ -58,7 +48,7 @@ class VisionController:
 
         return mu_adjustment
 
-    def _analyze_curvature(self, image):
+    def analyze_curvature(self, image):
         """
         Analyze the curvature of the road in the image.
         
@@ -138,64 +128,9 @@ class VisionController:
             return 1.1 #very tight curves
         elif avg_slope < 1.4:
             print("Extremely Tight Curves Detected")
-            return 1.00 #very tight curves
-        else:
             return 0.95 #very tight curves
-    
-    # def _analyze_road_width(self, image):
-    #     """
-    #     Analyze the width of the road directly in front of the vehicle.
-        
-    #     Return: Width
-    #         1.00 > wide road, open space
-    #         1.00 < narrow road, tight space
-    #         ~1.00  normal width
-    #     """
-
-    #     grey_camera_img = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-    #     #Increase contrast of the image through CLAHE
-    #     clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8,8))
-    #     grey_camera_img = clahe.apply(grey_camera_img)
-    #     #Gaussian Blur to reduce noise
-    #     blurred_camera_img = cv2.GaussianBlur(grey_camera_img, (9, 9), 0)
-    #     #Edge detection through Canny
-    #     edges = cv2.Canny(blurred_camera_img, 120, 200)
-
-    #     #Focusing on the visible portion of the track
-    #     height, width = edges.shape
-    #     mid_top = int(height*0.4)
-    #     mid_bottom = int(height*0.6)
-    #     region_of_interest = edges[mid_top:mid_bottom, :]
-
-    #     #Detect left and right edges (indicative  of road border)
-    #     horizontal_sum = np.sum(region_of_interest, axis=0)
-    #     threshold = np.sum(horizontal_sum) * 0.3
-    #     edge_pos = np.where(horizontal_sum > threshold)[0]
-
-    #     if self.debug_graphs:
-    #         debug_img = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
-    #         cv2.imshow("Road Width Debug", debug_img)
-    #         cv2.waitKey(1)
-
-    #     if(len(edge_pos) < 2):
-    #         return 1.0 #cant detect, assume all is normal
-        
-    #     left_edge = edge_pos[0]
-    #     right_edge = edge_pos[-1]
-    #     estimated_width = right_edge - left_edge
-    #     #lane to image width ratio
-    #     width_ratio = estimated_width / width
-
-    #     if width_ratio > 0.65:
-    #         return 1.2  # very wide region
-    #     elif width_ratio < 0.55:
-    #         return 1.1 # semi wide region
-    #     elif width_ratio < 0.45:
-    #         return 1.05 # normal width
-    #     elif width_ratio < 0.35:
-    #         return 0.975 # semi narrow region
-    #     else:
-    #         return 0.95 # very narrow region
+        else:
+            return 0.90 #very tight curves
 
     def visualize(self, image, mu_adjustment):
         """
@@ -211,7 +146,7 @@ class VisionController:
         #depicting mu adjustment on the image
         height, width = modified_img.shape[:2]
 
-        if mu_adjustment >= 1.25:
+        if mu_adjustment >= 1.0:
             color = (0, 255, 0) #Green for open space : Faster
         else:
             color = (0, 165, 255) #Red for tight space : Slower

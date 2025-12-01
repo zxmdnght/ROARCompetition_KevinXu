@@ -153,8 +153,10 @@ class RoarCompetitionSolution:
         
         #vision based mu adjustment
         vision_mu_adjustment = self.vision_controller.get_mu_adjustment(
-            vehicle_camera, current_speed_kmh
+            vehicle_camera
         )
+
+        print("DEBUGGING VISION MU ADJUSTMENT: " + str(vision_mu_adjustment))
 
         # compute and print section timing
         for i, section_ind in enumerate(self.section_indeces):

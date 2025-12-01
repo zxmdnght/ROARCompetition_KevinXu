@@ -35,12 +35,13 @@ class ThrottleController:
         print("done")
 
     def run(
-        self, waypoints, current_location, current_speed, current_section, vision_mu_adjustment=1.0
+        self, waypoints, current_location, current_speed, current_section, vision_mu_adjustment
     ) -> (float, float, int):
         self.tick_counter += 1
         throttle, brake = self.get_throttle_and_brake(
-            current_location, current_speed, current_section, waypoints
+            current_location, current_speed, current_section, waypoints, vision_mu_adjustment
         )
+        print("DEBUGGING VISION MU ADJUSTMENT: " + str(vision_mu_adjustment))
         # gear = max(1, (int)(math.log(current_speed + 0.00001, 5)))
         gear = max(1, int(current_speed / 60))
         if throttle < 0:
@@ -427,12 +428,18 @@ class ThrottleController:
         }
 
         mu = section_mu.get(current_section, mu)
+        mu_before = mu
         mu *= vision_mu_adjustment
 
         target_speed = math.sqrt(mu * 9.81 * radius) * 3.6
 
         if self.display_debug:
             print(f"[SpeedCalc] Sec {current_section} | Radius: {round(radius,1)} | mu: {mu:.2f} (base * {vision_mu_adjustment:.2f}) | TargetSpeed: {round(target_speed,1)}")
+            mu = section_mu.get(current_section, mu)
+
+        if abs(vision_mu_adjustment - 1.0) > 0.01: #testing if vision made a difference
+            print(f"Section {current_section}: mu {mu_before:.2f} → {mu:.2f} (vision: {vision_mu_adjustment:.3f}), target_speed: {target_speed:.1f}")
+        
 
         return max(20, min(target_speed, self.max_speed))  # Clamp between 20 and max_speed
     def print_speed(
