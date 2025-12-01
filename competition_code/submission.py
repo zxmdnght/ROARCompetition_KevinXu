@@ -13,6 +13,7 @@ import numpy as np
 import roar_py_interface
 from LateralController import LatController
 from ThrottleController import ThrottleController
+from visionController import VisionController
 import atexit
 
 # from scipy.interpolate import interp1d
@@ -82,6 +83,7 @@ class RoarCompetitionSolution:
         self.collision_sensor = collision_sensor
         self.lat_controller = LatController()
         self.throttle_controller = ThrottleController()
+        self.vision_controller = VisionController(debug_graphs=True) # Enable debug graphs
         self.section_indeces = []
         self.num_ticks = 0
         self.section_start_ticks = 0
@@ -140,12 +142,18 @@ class RoarCompetitionSolution:
         vehicle_location = self.location_sensor.get_last_gym_observation()
         vehicle_rotation = self.rpy_sensor.get_last_gym_observation()
         vehicle_velocity = self.velocity_sensor.get_last_gym_observation()
+        vehicle_camera = self.camera_sensor.get_last_gym_observation()
         vehicle_velocity_norm = np.linalg.norm(vehicle_velocity)
         current_speed_kmh = vehicle_velocity_norm * 3.6
 
         # Find the waypoint closest to the vehicle
         self.current_waypoint_idx = filter_waypoints(
             vehicle_location, self.current_waypoint_idx, self.maneuverable_waypoints
+        )
+        
+        #vision based mu adjustment
+        vision_mu_adjustment = self.vision_controller.get_mu_adjustment(
+            vehicle_camera, current_speed_kmh
         )
 
         # compute and print section timing
@@ -178,6 +186,7 @@ class RoarCompetitionSolution:
             vehicle_location,
             current_speed_kmh,
             self.current_section,
+            vision_mu_adjustment
         )
 
         steerMultiplier = round((current_speed_kmh + 0.001) / 120, 3)

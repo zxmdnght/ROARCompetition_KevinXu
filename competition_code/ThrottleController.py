@@ -35,7 +35,7 @@ class ThrottleController:
         print("done")
 
     def run(
-        self, waypoints, current_location, current_speed, current_section
+        self, waypoints, current_location, current_speed, current_section, vision_mu_adjustment=1.0
     ) -> (float, float, int):
         self.tick_counter += 1
         throttle, brake = self.get_throttle_and_brake(
@@ -59,7 +59,7 @@ class ThrottleController:
         return throttle, brake, gear
 
     def get_throttle_and_brake(
-        self, current_location, current_speed, current_section, waypoints
+        self, current_location, current_speed, current_section, waypoints, vision_mu_adjustment=1.0
     ):
         """
         Returns throttle and brake values based off the car's current location and the radius of the approaching turn
@@ -70,9 +70,9 @@ class ThrottleController:
         r2 = self.get_radius(nextWaypoint[self.mid_index : self.mid_index + 3])
         r3 = self.get_radius(nextWaypoint[self.far_index : self.far_index + 3])
 
-        target_speed1 = self.get_target_speed(r1, current_section)
-        target_speed2 = self.get_target_speed(r2, current_section)
-        target_speed3 = self.get_target_speed(r3, current_section)
+        target_speed1 = self.get_target_speed(r1, current_section, vision_mu_adjustment)
+        target_speed2 = self.get_target_speed(r2, current_section, vision_mu_adjustment)
+        target_speed3 = self.get_target_speed(r3, current_section, vision_mu_adjustment)
 
         close_distance = self.target_distance[self.close_index] + 3
         mid_distance = self.target_distance[self.mid_index]
@@ -98,7 +98,7 @@ class ThrottleController:
                         nextWaypoint[self.mid_index + 4],
                     ]
                 )
-                target_speed4 = self.get_target_speed(r4, current_section)
+                target_speed4 = self.get_target_speed(r4, current_section, vision_mu_adjustment)
                 speed_data.append(
                     self.speed_for_turn(close_distance, target_speed4, current_speed)
                 )
@@ -110,7 +110,7 @@ class ThrottleController:
                     nextWaypoint[self.close_index + 6],
                 ]
             )
-            target_speed5 = self.get_target_speed(r5, current_section)
+            target_speed5 = self.get_target_speed(r5, current_section, vision_mu_adjustment)
             speed_data.append(
                 self.speed_for_turn(close_distance, target_speed5, current_speed)
             )
@@ -407,7 +407,7 @@ class ThrottleController:
 
         return radius
 
-    def get_target_speed(self, radius: float, current_section: int):
+    def get_target_speed(self, radius: float, current_section: int, vision_mu_adjustment = 1.0):
         """Returns a target speed based on the radius of the turn and the section it is in"""
         mu = 2.75  # default
 
@@ -427,11 +427,12 @@ class ThrottleController:
         }
 
         mu = section_mu.get(current_section, mu)
+        mu *= vision_mu_adjustment
 
         target_speed = math.sqrt(mu * 9.81 * radius) * 3.6
 
         if self.display_debug:
-            print(f"[SpeedCalc] Sec {current_section} | Radius: {round(radius,1)} | mu: {mu} | TargetSpeed: {round(target_speed,1)}")
+            print(f"[SpeedCalc] Sec {current_section} | Radius: {round(radius,1)} | mu: {mu:.2f} (base * {vision_mu_adjustment:.2f}) | TargetSpeed: {round(target_speed,1)}")
 
         return max(20, min(target_speed, self.max_speed))  # Clamp between 20 and max_speed
     def print_speed(
