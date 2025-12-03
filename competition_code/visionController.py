@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from collections import deque
 
 class VisionController:
     """
@@ -10,8 +11,17 @@ class VisionController:
         self.debug_graphs = debug_graphs
         self.last_mu_adjustment = 1.0
         self.frame_count = 0
+
+        self.curvature_reducer = deque(maxlen=5)
+        self.confidence_reducer = deque(maxlen=5)
+        
+        self.vision_disabler = [ #certain curves and regions better left untouched
+            (800, 950)
+        ]
+
+        self.vision_disabler_sections = [3, 4, 5, 6, 7] #use waypoint instead
     
-    def get_mu_adjustment(self, camera_image):
+    def get_mu_adjustment(self, camera_image, current_speed_kmh, current_waypoint_idx):
         """
         Analyze the camera image and return a mu adjustment factor for speed.
         Args: camera_image (np.ndarray): The input camera image from the vehicle
@@ -21,9 +31,12 @@ class VisionController:
             < 1.0 = speed should be decreased (tight curves, narrow area)
         """
         if camera_image is None:
-            return self.last_mu_adjustment
+            return 1.0
         
         self.frame_count += 1
+
+        if self._should_disable_vision():
+            return 1.0
         
         #Every second frame
         #if self.frame_count % 2 != 0:
@@ -31,9 +44,18 @@ class VisionController:
         
         #Track curvature and width analysis
         numpy_camera_img = np.array(camera_image)
-        curvature = self.analyze_curvature(numpy_camera_img)
+        curvature, confidence = self.analyze_curvature(numpy_camera_img)
 
-        mu_adjustment = curvature
+        self.curvature_reducer.append(curvature)
+        self.confidence_reducer.append(confidence)
+
+        avg_curvature = np.mean(self.curvature_reducer)
+        avg_confidence = np.mean(self.confidence_reducer)
+
+        if current_speed_kmh > 500: #Original 500, high
+            avg_curvature *= 0.5 #Caution at high speeds
+        elif current_speed_kmh > 300: #Orginal 300, low
+            avg_confidence *= 0.7
     
         #Limiting extreme adjustments
         mu_adjustment = np.clip(mu_adjustment, 0.8, 1.35) #0.7 to 1.3 Original
