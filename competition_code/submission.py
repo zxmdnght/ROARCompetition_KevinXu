@@ -153,7 +153,10 @@ class RoarCompetitionSolution:
         
         #vision based mu adjustment
         vision_mu_adjustment = self.vision_controller.get_mu_adjustment(
-            vehicle_camera
+            vehicle_camera,
+            self.current_section,
+            current_speed_kmh,
+            self.current_waypoint_idx,
         )
 
         #print("DEBUGGING VISION MU ADJUSTMENT: " + str(vision_mu_adjustment))

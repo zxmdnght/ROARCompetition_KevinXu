@@ -16,10 +16,9 @@ class VisionController:
         self.confidence_reducer = deque(maxlen=5)
         
         self.vision_disabler = [ #certain curves and regions better left untouched
-            (800, 950)
+            (500, 570)
         ]
 
-        self.vision_disabler_sections = [3, 4, 5, 6, 7] #use waypoint instead
     
     def get_mu_adjustment(self, camera_image, current_speed_kmh, current_waypoint_idx):
         """
