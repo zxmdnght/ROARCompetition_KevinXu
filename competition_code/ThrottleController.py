@@ -19,7 +19,7 @@ class ThrottleController:
         self.max_radius = 10000
         self.max_speed = 300
         self.intended_target_distance = [0, 30, 60, 90, 120, 140, 170]
-        self.target_distance = [0, 30, 60, 90, 120, 150, 180]
+        self.target_distance = [0, 40, 80, 120, 160, 200, 240]#0, 30, 60, 90, 120, 150, 180 Orignial
         self.close_index = 0
         self.mid_index = 1
         self.far_index = 2
@@ -41,7 +41,8 @@ class ThrottleController:
         throttle, brake = self.get_throttle_and_brake(
             current_location, current_speed, current_section, waypoints, vision_mu_adjustment
         )
-        print("DEBUGGING VISION MU ADJUSTMENT: " + str(vision_mu_adjustment))
+
+        #print("DEBUGGING VISION MU ADJUSTMENT: " + str(vision_mu_adjustment))
         # gear = max(1, (int)(math.log(current_speed + 0.00001, 5)))
         gear = max(1, int(current_speed / 60))
         if throttle < 0:

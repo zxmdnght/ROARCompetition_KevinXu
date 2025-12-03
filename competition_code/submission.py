@@ -156,7 +156,7 @@ class RoarCompetitionSolution:
             vehicle_camera
         )
 
-        print("DEBUGGING VISION MU ADJUSTMENT: " + str(vision_mu_adjustment))
+        #print("DEBUGGING VISION MU ADJUSTMENT: " + str(vision_mu_adjustment))
 
         # compute and print section timing
         for i, section_ind in enumerate(self.section_indeces):
@@ -183,12 +183,17 @@ class RoarCompetitionSolution:
         waypoints_for_throttle = (self.maneuverable_waypoints * 2)[
             nextWaypointIndex : nextWaypointIndex + 300
         ]
+        if 480 < self.current_waypoint_idx < 530:  # Problem area
+            vision_mu_adjustment = 0.95  # Force slower in this zone
+        else:
+            vision_mu_adjustment = 1.3
+
         throttle, brake, gear = self.throttle_controller.run(
             waypoints_for_throttle,
             vehicle_location,
             current_speed_kmh,
             self.current_section,
-            vision_mu_adjustment
+            vision_mu_adjustment,
         )
 
         steerMultiplier = round((current_speed_kmh + 0.001) / 120, 3)

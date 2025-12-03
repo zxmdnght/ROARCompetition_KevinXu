@@ -36,9 +36,9 @@ class VisionController:
         mu_adjustment = curvature
     
         #Limiting extreme adjustments
-        mu_adjustment = np.clip(mu_adjustment, 0.5, 2.0) #0.7 to 1.3 Original
+        mu_adjustment = np.clip(mu_adjustment, 0.8, 1.35) #0.7 to 1.3 Original
         
-        smoothing = 0.7 #0.7 Original, reduces jitter and adjustments
+        smoothing = 0.8 #0.7 Original, reduces jitter and adjustments
         mu_adjustment = smoothing * self.last_mu_adjustment + (1 - smoothing) * mu_adjustment
         self.last_mu_adjustment = mu_adjustment
 
@@ -103,36 +103,33 @@ class VisionController:
         avg_slope = np.mean(slopes)
         if avg_slope < 1.05:
             print("Extremely Straight Road Detected")
-            return 2.0 #extremely straight road
-        elif avg_slope < 1.10:
+            return 1.3 #extremely straight road
+        elif avg_slope < 1.1:
             print("Very Straight Road Detected")
-            return 1.075 #very straight road
-        elif avg_slope < 1.11:
-            print("Straight Road Detected")
-            return 1.05 #straight road
-        elif avg_slope < 1.12:
-            print("Moderate Curves Detected")
-            return 1.00 #moderate curves
-        elif avg_slope < 1.13:
-            print("Mild Curves Detected")
-            return 0.925 #mild curves
-        elif avg_slope < 1.14:
-            print("Somewhat Tight Curves Detected")
-            return 0.85 #somewhat tight curves
+            return 1.25 #very straight road
         elif avg_slope < 1.15:
-            print("Tight Curves Detected")
-            return 0.825 #tight curves
-        elif avg_slope < 1.16:
-            print("Very Tight Curves Detected")
-            return 0.8 #very tight curves
-        elif avg_slope < 1.18:
-            print("Very Very Tight Curves Detected")
-            return 0.75 #very very tight curves
+            print("Straight Road Detected")
+            return 1.2 #straight road
+        elif avg_slope < 1.20:
+            print("Moderate Curves Detected")
+            return 1.1 #moderate curves
+        elif avg_slope < 1.21:
+            print("Mild Curves Detected")
+            return 1.0 #mild curves
         elif avg_slope < 1.22:
+            print("Somewhat Tight Curves Detected")
+            return 0.9 #somewhat tight curves
+        elif avg_slope < 1.23:
+            print("Tight Curves Detected")
+            return 0.85 #tight curves
+        elif avg_slope < 1.24:
+            print("Very Very Tight Curves Detected")
+            return 0.825 #very very tight curves
+        elif avg_slope < 1.25:
             print("Extremely Tight Curves Detected")
-            return 0.7 #extremely tight curves
+            return 0.8#extremely tight curves
         else:
-            return 0.5 
+            return 0.8
 
     def visualize(self, image, mu_adjustment):
         """
