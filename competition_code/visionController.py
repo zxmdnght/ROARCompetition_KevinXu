@@ -118,21 +118,21 @@ class VisionController:
         grey_camera_img = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
         
         #Increase contrast of the image through CLAHE
-        clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8,8))
+        clahe = cv2.createCLAHE(clipLimit=5.0, tileGridSize=(8,8))
         grey_camera_img = clahe.apply(grey_camera_img)
         #Gaussian Blur to reduce noise
-        blurred_camera_img = cv2.GaussianBlur(grey_camera_img, (5, 5), 0)
+        blurred_camera_img = cv2.GaussianBlur(grey_camera_img, (7, 7), 0)
         #Edge detection through Canny
-        edges = cv2.Canny(blurred_camera_img, 120, 200)
+        edges = cv2.Canny(blurred_camera_img, 80, 200)
 
         #Focusing on the visible portion of the track
         height, width = edges.shape
         far_top = int(height*0.05)
-        far_left = int(width*0.55)
-        far_right = int(width*0.55)
-        near_bottom = int(height*0.65)
-        near_left = int(width*0.25)
-        near_right = int(width*0.85)
+        far_left = int(width*0.35)
+        far_right = int(width*0.65)
+        near_bottom = int(height*0.49)
+        near_left = int(width*0.2)
+        near_right = int(width*0.8)
         trapezoid = np.zeros_like(edges)
         pts = np.array([[far_left, near_bottom],
                         [far_right, near_bottom],
@@ -144,7 +144,7 @@ class VisionController:
         region_of_interest = cv2.bitwise_and(edges, trapezoid)
 
         #Hough Transform to detect lines
-        lines = cv2.HoughLinesP(region_of_interest, 1, np.pi / 180, threshold=50, minLineLength=75, maxLineGap=200)
+        lines = cv2.HoughLinesP(region_of_interest, 1, np.pi / 180, threshold=50, minLineLength=80, maxLineGap=40)
         #Edit for amt of lines, sensitivity, and connection (Orginal values: 40, 50, 150)
 
         if lines is None or len(lines) < 3:
