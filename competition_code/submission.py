@@ -186,10 +186,6 @@ class RoarCompetitionSolution:
         waypoints_for_throttle = (self.maneuverable_waypoints * 2)[
             nextWaypointIndex : nextWaypointIndex + 300
         ]
-        if 480 < self.current_waypoint_idx < 530:  # Problem area
-            vision_mu_adjustment = 0.95  # Force slower in this zone
-        else:
-            vision_mu_adjustment = 1.3
 
         throttle, brake, gear = self.throttle_controller.run(
             waypoints_for_throttle,

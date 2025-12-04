@@ -61,7 +61,7 @@ class ThrottleController:
         return throttle, brake, gear
 
     def get_throttle_and_brake(
-        self, current_location, current_speed, current_section, waypoints, vision_mu_adjustment=1.0
+        self, current_location, current_speed, current_section, waypoints, vision_mu_adjustment
     ):
         """
         Returns throttle and brake values based off the car's current location and the radius of the approaching turn
