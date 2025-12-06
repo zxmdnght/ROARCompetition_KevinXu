@@ -19,7 +19,7 @@ class ThrottleController:
         self.max_radius = 10000
         self.max_speed = 300
         self.intended_target_distance = [0, 30, 60, 90, 120, 140, 170]
-        self.target_distance = [0, 40, 80, 120, 160, 200, 240]#0, 30, 60, 90, 120, 150, 180 Orignial
+        self.target_distance = [0, 30, 60, 90, 120, 150, 180]#0, 30, 60, 90, 120, 150, 180 Orignial
         self.close_index = 0
         self.mid_index = 1
         self.far_index = 2
