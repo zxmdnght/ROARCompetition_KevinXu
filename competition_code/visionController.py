@@ -80,7 +80,7 @@ class VisionController:
         if confidence < 0.3:
             print("Uncertain")
             print(f"Vision Controller - Curvature: {curvature:.2f}, Confidence: {confidence:.2f}, Mu Adj: 1.05")
-            return 1.05 #low confidence, no adjustment
+            return 1.02 #low confidence, no adjustment
         
         #Weighting factors
         if curvature >= 0.95:
@@ -127,10 +127,10 @@ class VisionController:
         grey_camera_img = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
         
         #Increase contrast of the image through CLAHE
-        clahe = cv2.createCLAHE(clipLimit=5.0, tileGridSize=(8,8))
+        clahe = cv2.createCLAHE(clipLimit=4.0, tileGridSize=(8,8))
         grey_camera_img = clahe.apply(grey_camera_img)
         #Gaussian Blur to reduce noise
-        blurred_camera_img = cv2.GaussianBlur(grey_camera_img, (5, 5), 0)
+        blurred_camera_img = cv2.GaussianBlur(grey_camera_img, (3, 3), 0)
         #Edge detection through Canny
         edges = cv2.Canny(blurred_camera_img, 50, 150)
 
@@ -153,7 +153,7 @@ class VisionController:
         region_of_interest = cv2.bitwise_and(edges, trapezoid)
 
         #Hough Transform to detect lines
-        lines = cv2.HoughLinesP(region_of_interest, 1, np.pi / 180, threshold=40, minLineLength=115.5, maxLineGap=25) #50, 115.5, 21
+        lines = cv2.HoughLinesP(region_of_interest, 1, np.pi / 180, threshold=40, minLineLength=113.5, maxLineGap=23) #50, 115.5, 21
         #Edit for amt of lines, sensitivity, and connection (Orginal values: 40, 50, 150)
 
         if lines is None or len(lines) < 3:
