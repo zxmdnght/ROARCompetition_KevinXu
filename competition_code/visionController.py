@@ -152,6 +152,7 @@ class VisionController:
             slope = abs(np.arctan((y2 - y1) / (x2 - x1)))
             deviation_difference = abs(slope - np.pi/2)
             line_length = np.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2)
+            #TODO: Consider less restrictive slope thresholds
             if 0.7 < deviation_difference < 1.0: #0.5 and 1.1
                 avg_horizontal = (x1 + x2) / 2
                 track_width = near_right - near_left
