@@ -21,7 +21,7 @@ class VisionController:
         self.curvature_reducer = deque(maxlen=5)
         self.confidence_reducer = deque(maxlen=5)
 
-        self.adjustment_history = deque(maxlen=10)
+        self.adjustment_history = deque(maxlen=3)
         self.slope_history = deque(maxlen=10)
         self.max_adj_change = 0.15
 
