@@ -159,7 +159,8 @@ class RoarCompetitionSolution:
             self.current_waypoint_idx,
         )
 
-        #print("DEBUGGING VISION MU ADJUSTMENT: " + str(vision_mu_adjustment))
+        if self.num_ticks % 50 == 0:
+            print(self.vision_controller.get_stats())
 
         # compute and print section timing
         for i, section_ind in enumerate(self.section_indeces):
@@ -168,6 +169,8 @@ class RoarCompetitionSolution:
                 and i != self.current_section
             ):
                 print(f"Section {i}: {self.num_ticks - self.section_start_ticks} ticks")
+                print(self.vision_controller.get_stats())
+                self.vision_controller.reset_stats()
                 self.section_start_ticks = self.num_ticks
                 self.current_section = i
                 if self.current_section == 0 and self.lapNum != 3:
