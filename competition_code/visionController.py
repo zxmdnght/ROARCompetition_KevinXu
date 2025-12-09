@@ -13,6 +13,7 @@ class VisionController:
             'vision_frames': 0,
             'rejected_frames': 0,
             'low_conf_frames': 0,
+            'avg_lines_detected': []
         }
         self.debug_graphs = debug_graphs
         self.last_mu_adjustment = 1.0
@@ -86,32 +87,32 @@ class VisionController:
         
         #Weighting factors
         #TODO: tune better thresholds, currently too linear. Improve curvature detection first
-        if curvature >= 0.95:
-            adj = 1.25
+        if curvature >= 0.96:
+            adj = 1.2
             if self.debug_graphs:
                 print("Extremely Straight Road Adjustment")
-        elif curvature >= 0.9:
+        elif curvature >= 0.94:
             adj = 1.05
             if self.debug_graphs:
                 print("Straight Road Adjustment")
-        elif curvature >= 0.85:
-            adj = 1.02
+        elif curvature >= 0.92:
+            adj = 1.03
             if self.debug_graphs:
                 print("Straight Road Adjustment")
-        elif curvature >= 0.825:
-            adj = 1.00
+        elif curvature >= 0.87:
+            adj = 1.01
             if self.debug_graphs:
                 print("Semi Straight Road Adjustment")
+        elif curvature >= 0.85:
+            adj = 1.00
+            if self.debug_graphs:
+                print("Mild Curve Road Adjustment")
         elif curvature >= 0.79:
             adj = 0.98
             if self.debug_graphs:
-                print("Mild Curve Road Adjustment")
-        elif curvature >= 0.7:
-            adj = 0.95
-            if self.debug_graphs:
                 print("Tight Curve Road Adjustment")
         else:
-            adj = 0.925
+            adj = 0.95
             if self.debug_graphs:
                 print("Extremely Curvy Road Adjustment")
         
@@ -158,7 +159,7 @@ class VisionController:
         region_of_interest = cv2.bitwise_and(edges, trapezoid)
 
         #Hough Transform to detect lines
-        lines = cv2.HoughLinesP(region_of_interest, 1, np.pi / 180, threshold=30, minLineLength=60, maxLineGap=40) #40, 113.5, 23
+        lines = cv2.HoughLinesP(region_of_interest, 1, np.pi / 180, threshold=25, minLineLength=60, maxLineGap=50) #40, 113.5, 23
         #TODO: tune minLL and mLGap for better line detection
         #skipping some sections at curves
 
@@ -177,14 +178,14 @@ class VisionController:
             deviation_difference = abs(slope - np.pi/2)
             line_length = np.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2)
 
-            if line_length < 40:
+            if line_length < 35:
                 continue
 
-            if slope < 0.4:
+            if slope < 0.35:
                 continue
 
             #TODO: Consider less restrictive slope thresholds
-            if 0.65 < deviation_difference < 1.05: #0.5 and 1.1
+            if 0.6 < deviation_difference < 1.1: #0.5 and 1.1
                 avg_horizontal = (x1 + x2) / 2
                 avg_vert = (y1 + y2) / 2
                 track_width = near_right - near_left
@@ -197,14 +198,6 @@ class VisionController:
         if not slopes or len(slopes) < 2:
             return 1.0, 0.0 #cant detect, assume all is normal
         
-        num_detected_lines_len = len(slopes)
-        avg_detected_line_len = np.mean(line_len)
-        num_lines_confidence = min(1.0, num_detected_lines_len/10.0)#Original 10
-        length_lines_confidence = min(1.0, avg_detected_line_len/100.0) #Original 100
-        slope_consistency_confidence = max(0.0, 1.0 - np.std(slopes)*0.8) #Original 0.8
-
-        #TODO: currrently too harsh on confidence, tune better
-        confidence = (num_lines_confidence * 0.4 + length_lines_confidence * 0.3 + slope_consistency_confidence * 0.3 )
         avg_slope = np.mean(slopes)
 
         if len(self.slope_history) >= 3:
@@ -218,18 +211,26 @@ class VisionController:
                 return 1.0, 0.0
         self.slope_history.append(avg_slope)
 
+        num_detected_lines_len = len(slopes)
+        self.stats['avg_lines_detected'].append(num_detected_lines_len)
+        avg_detected_line_len = np.mean(line_len)
+        num_lines_confidence = min(1.0, num_detected_lines_len/8.0)#Original 10
+        length_lines_confidence = min(1.0, avg_detected_line_len/80.0) #Original 100
+        slope_consistency_confidence = max(0.0, 1.0 - np.std(slopes)*0.6) #Original 0.8
+        #TODO: currrently too harsh on confidence, tune better
+        confidence = (num_lines_confidence * 0.4 + length_lines_confidence * 0.25 + slope_consistency_confidence * 0.25)
         
         #curvature estimation
         #TODO: tune better thresholds
         if avg_slope > 0.94:
             if self.debug_graphs:
                 print("Extremely Straight Road Detected")
-            curvature = 1.3 #1.3 from 0.75
-        elif avg_slope > 0.935:
+            curvature = 1.2 #1.3 from 0.75
+        elif avg_slope > 0.93:
             if self.debug_graphs:
                 print("Very Straight Road Detected")
             curvature = 1.15 #1.15 from 0.8
-        elif avg_slope > 0.91:
+        elif avg_slope > 0.92:
             if self.debug_graphs:
                 print("Straight Road Detected")
             curvature = 1.05 #1.08 from 0.85
@@ -237,28 +238,28 @@ class VisionController:
             if self.debug_graphs:
                 print("Moderate Curves Detected")
             curvature = 1.00 #1.03 from 0.9
-        elif avg_slope > 0.88:
+        elif avg_slope > 0.87:
             if self.debug_graphs:
                 print("Mild Curves Detected")
             curvature = 0.95 #1.0 from 0.95
-        elif avg_slope > 0.875:
-            if self.debug_graphs:
-                print("Somewhat Tight Curves Detected")
-            curvature = 0.93 #0.95 from 1.0
         elif avg_slope > 0.85:
             if self.debug_graphs:
                 print("Somewhat Tight Curves Detected")
-            curvature = 0.93 #0.95 from 1.0
-        elif avg_slope > 0.82:
-            if self.debug_graphs:
-                print("Tight Curves Detected")
-            curvature = 0.9 #0.93 from 1.05
+            curvature = 0.92 #0.95 from 1.0
         elif avg_slope > 0.8:
             if self.debug_graphs:
+                print("Somewhat Tight Curves Detected")
+            curvature = 0.9 #0.95 from 1.0
+        elif avg_slope > 0.77:
+            if self.debug_graphs:
+                print("Tight Curves Detected")
+            curvature = 0.87 #0.93 from 1.05
+        elif avg_slope > 0.75:
+            if self.debug_graphs:
                 print("Very Very Tight Curves Detected")
-            curvature = 0.87 #0.9 from 1.1
+            curvature = 0.85 #0.9 from 1.1
         else:
-            curvature = 0.85
+            curvature = 0.825
         
         if self.debug_graphs:
             print("Extremely Tight Curves Detected")
@@ -296,4 +297,15 @@ class VisionController:
         reject_rate = self.stats['rejected_frames'] / self.stats['total_frames'] * 100
         low_conf_rate = self.stats['low_conf_frames'] / self.stats['total_frames'] * 100
         info = (f"Info:\n" f"Avg Lines Detected: {avg_lines:.2f}\n" f"Rejected Frms: {self.stats['rejected_frames']} ({reject_rate:.2f}%)\n" f"Low Confidence Frms: {self.stats['low_conf_frames']} ({low_conf_rate:.2f}%)\n")
+        return info
+    
+    def reset_stats(self):
+        self.stats = {
+            'total_frames': 0,
+            'vision_frames': 0,
+            'rejected_frames': 0,
+            'low_conf_frames': 0,
+            'avg_lines_detected': []
+        }
+        
 

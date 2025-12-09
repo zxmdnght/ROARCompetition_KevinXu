@@ -159,7 +159,7 @@ class RoarCompetitionSolution:
             self.current_waypoint_idx,
         )
 
-        if self.num_ticks % 50 == 0:
+        if self.num_ticks % 5 == 0:
             print(self.vision_controller.get_information())
 
         # compute and print section timing
