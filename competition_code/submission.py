@@ -83,7 +83,7 @@ class RoarCompetitionSolution:
         self.collision_sensor = collision_sensor
         self.lat_controller = LatController()
         self.throttle_controller = ThrottleController()
-        self.vision_controller = VisionController(debug_graphs=True) # Enable debug graphs
+        self.vision_controller = VisionController(debug_graphs=False) # Enable debug graphs
         self.section_indeces = []
         self.num_ticks = 0
         self.section_start_ticks = 0
@@ -159,7 +159,7 @@ class RoarCompetitionSolution:
             self.current_waypoint_idx,
         )
 
-        if self.num_ticks % 5 == 0:
+        if self.num_ticks % 5 == 0 and self.vision_controller.debug_graphs:
             print(self.vision_controller.get_information())
 
         # compute and print section timing

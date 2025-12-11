@@ -34,6 +34,9 @@ class VisionController:
         """
         if camera_image is None:
             return 1.0
+
+        if 6260 <= current_waypoint_idx <= 6290: #Sharp turn before long straight
+            return 1.0
         
         self.stats['total_frames'] += 1
         self.stats['vision_frames'] += 1
@@ -83,32 +86,36 @@ class VisionController:
             if self.debug_graphs:
                 print("Uncertain")
                 print(f"Vision Controller - Curvature: {curvature:.2f}, Confidence: {confidence:.2f}, Mu Adj: 1.01")
-            return 1.01 #low confidence, no adjustment
+            return 1.005 #low confidence, no adjustment
         
         #Weighting factors
         #TODO: tune better thresholds, currently too linear. Improve curvature detection first
         if curvature >= 0.96:
-            adj = 1.2
+            adj = 1.17
             if self.debug_graphs:
                 print("Extremely Straight Road Adjustment")
         elif curvature >= 0.94:
-            adj = 1.05
+            adj = 1.06
             if self.debug_graphs:
                 print("Straight Road Adjustment")
-        elif curvature >= 0.92:
-            adj = 1.03
+        elif curvature >= 0.925:
+            adj = 1.033
             if self.debug_graphs:
                 print("Straight Road Adjustment")
-        elif curvature >= 0.87:
+        elif curvature >= 0.89:
             adj = 1.01
             if self.debug_graphs:
                 print("Semi Straight Road Adjustment")
-        elif curvature >= 0.85:
+        elif curvature >= 0.87:
             adj = 1.00
+            if self.debug_graphs:
+                print("Semi Straight Road Adjustment")
+        elif curvature >= 0.85:
+            adj = 0.99
             if self.debug_graphs:
                 print("Mild Curve Road Adjustment")
         elif curvature >= 0.79:
-            adj = 0.98
+            adj = 0.97
             if self.debug_graphs:
                 print("Tight Curve Road Adjustment")
         else:
@@ -308,4 +315,3 @@ class VisionController:
             'avg_lines_detected': []
         }
         
-
