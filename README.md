@@ -3,6 +3,6 @@
 
 ## Requirements
 
-Requires `progress` module, ROAR_PY, and OpenCV
+Requires `progress` module, ROAR_PY, and `OpenCV`
 
 
