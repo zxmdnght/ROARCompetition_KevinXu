@@ -36,10 +36,10 @@ class VisionController:
             return 1.0
         if 3490 <= current_waypoint_idx <= 3510: #Sharp turn before long straight
             return 0.99
-        if 6220 <= current_waypoint_idx <= 6230: #Sharp turn before long straight
-            return 1.00
-        if 5000 <= current_waypoint_idx <= 5400 or 7800 <= current_waypoint_idx <= 8100 or 1700 <= current_waypoint_idx <= 1800: #Sharp turn before long straight
-            return 1.5
+        if 6220 <= current_waypoint_idx <= 6230 or 710 <= current_waypoint_idx <= 740: #Sharp turn before long straight
+            return 1.0
+        if 5000 <= current_waypoint_idx <= 5400 or 7800 <= current_waypoint_idx <= 8100 or 1600 <= current_waypoint_idx <= 1800: #Sharp turn before long straight
+            return 1.3
 
         self.stats['total_frames'] += 1
         self.stats['vision_frames'] += 1
