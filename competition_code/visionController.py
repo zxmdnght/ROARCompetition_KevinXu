@@ -41,7 +41,7 @@ class VisionController:
         if 880 <= current_waypoint_idx <= 895: #Sharp turn before long straight
             return 1.0
         if 5000 <= current_waypoint_idx <= 5300 or 7800 <= current_waypoint_idx <= 7900 or 1600 <= current_waypoint_idx <= 1800: #Sharp turn before long straight
-            return 1.12
+            return 1.11
 
         self.stats['total_frames'] += 1
         self.stats['vision_frames'] += 1
@@ -100,11 +100,11 @@ class VisionController:
             if self.debug_graphs:
                 print("Extremely Straight Road Adjustment")
         elif curvature >= 0.94:
-            adj = 1.04
+            adj = 1.03
             if self.debug_graphs:
                 print("Straight Road Adjustment")
         elif curvature >= 0.925:
-            adj = 1.03
+            adj = 1.01
             if self.debug_graphs:
                 print("Straight Road Adjustment")
         elif curvature >= 0.89:
