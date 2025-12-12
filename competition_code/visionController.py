@@ -35,9 +35,13 @@ class VisionController:
         if camera_image is None:
             return 1.0
 
-        if 6245 <= current_waypoint_idx <= 6290 or 3490 <= current_waypoint_idx <= 3510: #Sharp turn before long straight
+        if 3490 <= current_waypoint_idx <= 3510: #Sharp turn before long straight
             return 0.99
-        
+        if 6220 <= current_waypoint_idx <= 6230: #Sharp turn before long straight
+            return 1.00
+        if 5000 <= current_waypoint_idx <= 5400: #Sharp turn before long straight
+            return 1.4
+
         self.stats['total_frames'] += 1
         self.stats['vision_frames'] += 1
         self.frame_count += 1
