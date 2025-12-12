@@ -36,7 +36,7 @@ class VisionController:
         #difficult regions
         if camera_image is None:
             return 1.0
-        if 3490 <= current_waypoint_idx <= 3510 or 680 <= current_waypoint_idx <= 740: #Sharp turn before long straight
+        if 3450 <= current_waypoint_idx <= 3510 or 680 <= current_waypoint_idx <= 740: #Sharp turn before long straight
             return 0.97
         if 6220 <= current_waypoint_idx <= 6230 or 880 <= current_waypoint_idx <= 895: #Sharp turn before long straight
             return 1.0
@@ -100,11 +100,11 @@ class VisionController:
             if self.debug_graphs:
                 print("Extremely Straight Road Adjustment")
         elif curvature >= 0.94:
-            adj = 1.27
+            adj = 1.07
             if self.debug_graphs:
                 print("Straight Road Adjustment")
         elif curvature >= 0.925:
-            adj = 1.01
+            adj = 1.03
             if self.debug_graphs:
                 print("Straight Road Adjustment")
         elif curvature >= 0.89:
