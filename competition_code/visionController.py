@@ -86,12 +86,12 @@ class VisionController:
             if self.debug_graphs:
                 print("Uncertain")
                 print(f"Vision Controller - Curvature: {curvature:.2f}, Confidence: {confidence:.2f}, Mu Adj: 1.01")
-            return 1.005 #low confidence, no adjustment
+            return 1.0 #low confidence, no adjustment
         
         #Weighting factors
         #TODO: tune better thresholds, currently too linear. Improve curvature detection first
         if curvature >= 0.96:
-            adj = 1.17
+            adj = 1.15
             if self.debug_graphs:
                 print("Extremely Straight Road Adjustment")
         elif curvature >= 0.94:
@@ -99,7 +99,7 @@ class VisionController:
             if self.debug_graphs:
                 print("Straight Road Adjustment")
         elif curvature >= 0.925:
-            adj = 1.03
+            adj = 1.02
             if self.debug_graphs:
                 print("Straight Road Adjustment")
         elif curvature >= 0.89:
