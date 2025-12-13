@@ -1,3 +1,5 @@
 Please Install
 - OpenCV: pip install opencv-python
 - NumPy: pip install numpy
+
+When running, please ensure that the pygame simulation window is not minimized or hidden behind other windows

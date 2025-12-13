@@ -102,7 +102,7 @@ class VisionController:
             if self.debug_graphs:
                 print("Straight Road Adjustment")
         elif curvature >= 0.925:
-            adj = 1.021
+            adj = 1.022
             if self.debug_graphs:
                 print("Straight Road Adjustment")
         elif curvature >= 0.9:
