@@ -270,32 +270,31 @@ class VisionController:
             curvature = 0.85 #0.9 from 1.1
         else:
             curvature = 0.825
-        
-        if self.debug_graphs:
-            print("Extremely Tight Curves Detected")
             if self.debug_graphs:
-                debug_img = cv2.cvtColor(region_of_interest, cv2.COLOR_RGB2BGR)
-                cv2.polylines(debug_img, [pts], isClosed=True, color=(0, 255, 0), thickness=3)
-                if lines is not None:
-                    for line in lines:
-                        x1, y1, x2, y2 = line[0]
-                        if x2 - x1 == 0:
-                            continue
-                        slope = abs(np.arctan((y2 - y1) / (x2 - x1)))
-                        deviation_difference = abs(slope - np.pi/2)
-                        avg_x_horizontal = (x1 + x2) / 2
-                        track_width = near_right - near_left
-                        if deviation_difference > 0.7 and 0.25*track_width < avg_x_horizontal-near_left < 0.75*track_width:
-                            cv2.line(debug_img, (x1, y1), (x2, y2), (255, 0, 0), 2)
-                if slopes:
-                    avg_slope = np.mean(slopes)
-                    cv2.putText(debug_img, f"Avg Slope: {avg_slope:.3f}", (10,60), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
-                    cv2.putText(debug_img, f"Avg Curvature: {curvature:.3f}", (10,120), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
-                    cv2.putText(debug_img, f"Confidence: {confidence:.3f}", (10,180), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
+                print("Extremely Tight Curves Detected")
+        if self.debug_graphs:
+            debug_img = cv2.cvtColor(region_of_interest, cv2.COLOR_RGB2BGR)
+            cv2.polylines(debug_img, [pts], isClosed=True, color=(0, 255, 0), thickness=3)
+            if lines is not None:
+                for line in lines:
+                    x1, y1, x2, y2 = line[0]
+                    if x2 - x1 == 0:
+                        continue
+                    slope = abs(np.arctan((y2 - y1) / (x2 - x1)))
+                    deviation_difference = abs(slope - np.pi/2)
+                    avg_x_horizontal = (x1 + x2) / 2
+                    track_width = near_right - near_left
+                    if deviation_difference > 0.7 and 0.25*track_width < avg_x_horizontal-near_left < 0.75*track_width:
+                        cv2.line(debug_img, (x1, y1), (x2, y2), (255, 0, 0), 2)
+            if slopes:
+                avg_slope = np.mean(slopes)
+                cv2.putText(debug_img, f"Avg Slope: {avg_slope:.3f}", (10,60), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
+                cv2.putText(debug_img, f"Avg Curvature: {curvature:.3f}", (10,120), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
+                cv2.putText(debug_img, f"Confidence: {confidence:.3f}", (10,180), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
 
             
-                cv2.imshow("Slope Debug", debug_img)
-                cv2.waitKey(1)
+            cv2.imshow("Slope Debug", debug_img)
+            cv2.waitKey(1)
 
         return curvature, confidence
     
