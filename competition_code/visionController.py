@@ -98,11 +98,11 @@ class VisionController:
             if self.debug_graphs:
                 print("Extremely Straight Road Adjustment")
         elif curvature >= 0.941:
-            adj = 1.034
+            adj = 1.033
             if self.debug_graphs:
                 print("Straight Road Adjustment")
         elif curvature >= 0.925:
-            adj = 1.023
+            adj = 1.021
             if self.debug_graphs:
                 print("Straight Road Adjustment")
         elif curvature >= 0.9:
@@ -272,6 +272,7 @@ class VisionController:
             curvature = 0.825
             if self.debug_graphs:
                 print("Extremely Tight Curves Detected")
+
         if self.debug_graphs:
             debug_img = cv2.cvtColor(region_of_interest, cv2.COLOR_RGB2BGR)
             cv2.polylines(debug_img, [pts], isClosed=True, color=(0, 255, 0), thickness=3)
